@@ -2,11 +2,11 @@
 
 供临床医师快速完成克鲁宗综合征 A–F 六维评分。
 
-## 在线使用
+## 在线使用（长期链接）
 
-部署到 GitHub Pages 后，访问：
+**https://neurosurgerylijinwei.github.io/crouzon-cciss-scorer/**
 
-`https://<你的用户名>.github.io/crouzon-cciss-scorer/`
+仓库：https://github.com/neurosurgerylijinwei/crouzon-cciss-scorer
 
 ## 本地使用
 
