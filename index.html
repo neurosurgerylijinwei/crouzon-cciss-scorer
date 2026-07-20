@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CCISS 克鲁宗综合征评分工具</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-bg" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <p class="brand-kicker">临床评分辅助</p>
+        <h1>CCISS 评分工具</h1>
+        <p class="brand-sub">克鲁宗综合征临床-影像严重程度评分（A–F，总分 0–24）</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn ghost" id="btn-reset">清空</button>
+        <button type="button" class="btn ghost" id="btn-save">保存草稿</button>
+        <button type="button" class="btn secondary" id="btn-export">导出结果</button>
+        <button type="button" class="btn primary" id="btn-print">打印 / PDF</button>
+      </div>
+    </div>
+    <p class="disclaimer">
+      本工具供临床医师快速评分参考，阈值尚未经大样本外部验证，
+      <strong>不能单独作为手术决策依据</strong>。
+      未发现异常记 0 分；资料缺失记 NA，不得记 0。
+    </p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" class="tab active" data-tab="cciss" role="tab" aria-selected="true">开始评分</button>
+    <button type="button" class="tab" data-tab="surgery" role="tab">手术分类（可选）</button>
+    <button type="button" class="tab" data-tab="anchors" role="tab">评分标准</button>
+    <button type="button" class="tab" data-tab="summary" role="tab">结果汇总</button>
+  </nav>
+
+  <main class="layout">
+    <section class="main-panel">
+      <!-- CCISS 评分（含简要患者信息） -->
+      <div class="panel active" id="panel-cciss" role="tabpanel">
+        <div class="patient-bar">
+          <label>患者标识（可选）
+            <input type="text" id="patient_label" placeholder="姓名缩写 / 病历号，仅本机可见" />
+          </label>
+          <label>性别
+            <select id="sex">
+              <option value="">—</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </label>
+          <label>年龄（岁）
+            <input type="number" id="age_years" min="0" step="1" />
+          </label>
+          <label>月龄（月）
+            <input type="number" id="age_months" min="0" max="11" step="1" />
+          </label>
+          <label>评估日期
+            <input type="date" id="assess_date" />
+          </label>
+        </div>
+
+        <div class="panel-head">
+          <h2>A–F 六维评分</h2>
+          <p class="hint">每个维度只取最高且有证据支持的等级。先对照标准选分，必要时填写简要依据。</p>
+        </div>
+        <div id="dimensions"></div>
+      </div>
+
+      <!-- 手术分类（可选） -->
+      <div class="panel" id="panel-surgery" role="tabpanel">
+        <h2>手术分类（可选）</h2>
+        <p class="hint">如需记录拟行/已行手术类型可填写；手术方式不反向决定 A–F 分数。</p>
+
+        <fieldset class="block">
+          <legend>主要手术指征（单选）</legend>
+          <div class="choice-grid" id="indication-primary"></div>
+        </fieldset>
+
+        <fieldset class="block">
+          <legend>术式代码（可多选）</legend>
+          <div class="choice-grid multi" id="procedure-codes"></div>
+        </fieldset>
+
+        <fieldset class="block">
+          <legend>手术复杂度（单选）</legend>
+          <div class="choice-grid" id="complexity-grade"></div>
+        </fieldset>
+
+        <div class="form-grid">
+          <label>牵张成骨
+            <select id="distraction">
+              <option value="无">无</option>
+              <option value="有">有</option>
+            </select>
+          </label>
+          <label class="span-2">术式说明
+            <input type="text" id="procedure_text" placeholder="如：Le Fort III + 牵张" />
+          </label>
+        </div>
+      </div>
+
+      <!-- 评分标准 -->
+      <div class="panel" id="panel-anchors" role="tabpanel">
+        <h2>A–F 评分标准</h2>
+        <p class="hint">各维度 0–4 分锚点说明，供评分时对照。</p>
+        <div id="anchor-tables"></div>
+      </div>
+
+      <!-- 结果汇总 -->
+      <div class="panel" id="panel-summary" role="tabpanel">
+        <h2>评分结果</h2>
+        <div id="summary-detail" class="summary-detail"></div>
+        <label class="full">备注
+          <textarea id="clinical_notes" rows="3" placeholder="可选：补充临床判断或需随访事项"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <aside class="result-rail" aria-live="polite">
+      <h2>即时结果</h2>
+      <div class="score-hero">
+        <p class="score-label">CCISS 总分</p>
+        <p class="score-value" id="live-total">—</p>
+        <p class="score-max">/ 24</p>
+      </div>
+      <dl class="result-list">
+        <div><dt>已评维度</dt><dd id="live-scorable">0 / 6</dd></div>
+        <div><dt>严重程度</dt><dd id="live-grade">—</dd></div>
+        <div><dt>红旗提示</dt><dd id="live-redflag">否</dd></div>
+        <div><dt>多系统受累</dt><dd id="live-multisystem">否</dd></div>
+      </dl>
+      <div class="dim-pills" id="live-dims"></div>
+      <div class="rail-note" id="live-note">请按 A→F 逐项评分。</div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <p>评分锚点依据 CCISS 研究版手册。数据仅保存在本机浏览器，不会上传服务器。</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
